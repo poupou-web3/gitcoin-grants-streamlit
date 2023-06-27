@@ -173,7 +173,7 @@ def get_grants_bar_chart(votes_data):
     return fig
 
 
-def create_block_times(starting_blockNumber, ending_blockNumber, starting_blockTime):
+def create_block_times(starting_blockNumber, ending_blockNumber, starting_blockTime, chain_id):
     # Create an array of 107,000 blockNumbers starting from the starting_blockNumber and incrementing by 1 each time
     blocks = np.arange(starting_blockNumber, ending_blockNumber, 1)
     # create a new dataframe with the blocks array
@@ -182,6 +182,10 @@ def create_block_times(starting_blockNumber, ending_blockNumber, starting_blockT
     # create a new column called utc_time and use the starting_blockTime as the value for the first starting_blockNumber
     df['utc_time'] = starting_blockTime
     # as the blockNumber increases by 1, add 12.133 seconds to the utc_time
+    if chain_id == '1':
+        time_between_blocks = 12.133
+    elif chain_id == '10':
+        time_between_blocks = 2
     df['utc_time'] = pd.to_datetime(df['utc_time']) + pd.to_timedelta(
-        12.13 * (df['blockNumber'] - starting_blockNumber), unit='s')
+        time_between_blocks * (df['blockNumber'] - starting_blockNumber), unit='s')
     return df

@@ -55,10 +55,13 @@ if chain_data['round_id'].count() > 1:
     option = st.selectbox(
         'Select Round',
         chain_data['name'])
+    starting_blockTime = datetime.datetime(2023, 4, 25, 12, 13, 35)
 else:
     option = chain_data['name'].values[0]
     st.subheader("Round Details:")
     st.subheader(option)
+    # Jun-13-2023 12:06:13 PM +UTC)
+    starting_blockTime = datetime.datetime(2023, 6, 13, 12, 6, 13)
 
 data_load_state = st.text('Loading data...')
 # load round data for the option selected by looking up the round id with that name in the chain_data df
@@ -90,9 +93,9 @@ col2.write(dfp[['title', 'votes', 'amountUSD', 'uniqueContributors']])
 
 starting_blockNumber = dfv['blockNumber'].min()
 ending_blockNumber = dfv['blockNumber'].max()
-starting_blockTime = datetime.datetime(2023, 4, 25, 12, 13, 35)
 
-dfb = create_block_times(starting_blockNumber, ending_blockNumber, starting_blockTime)
+
+dfb = create_block_times(starting_blockNumber, ending_blockNumber, starting_blockTime, chain_id)
 # merge the block times with the votes data
 dfv = pd.merge(dfv, dfb, how='left', on='blockNumber')
 # graph of the amountUSD grouped by utc_time hour
