@@ -64,7 +64,7 @@ option = st.selectbox(
 data_load_state = st.text('Loading data...')
 # load round data for the option selected by looking up the round id with that name in the chain_data df
 round_id = chain_data[chain_data['name'] == option]['round_id'].values[0]
-dfp = load_round_projects_data(round_id)
+dfp = load_round_projects_data('1', round_id)
 dfv = load_round_votes_data(round_id)
 data_load_state.text("")
 
