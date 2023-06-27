@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide",
 )
 
-round_name = st.radio("Select Round ", ('Beta', 'Community'))
+round_name = st.radio("Select Round ", ('Beta', 'Citizen'))
 
 if round_name == 'Beta':
     chain_id = '1'
@@ -23,11 +23,10 @@ if round_name == 'Beta':
     st.write('You can donate to projects in the Beta Round from April 25th 2023 12:00 UTC to May 9th 2023 23:59 UTC.')
     st.write('👉 Visit [grants.gitcoin.co](https://grants.gitcoin.co) to donate.')
 
-elif round_name == 'Community':
+elif round_name == 'Citizen':
     chain_id = '10'
 
-    st.title('Gitcoin Community Rounds')
-
+    st.title('Gitcoin Citizen Rounds')
 
 data_load_state = st.text('Loading data...')
 chain_data = load_chain_data(chain_id)
@@ -74,23 +73,22 @@ col1, col2 = st.columns(2)
 total_usd = dfv['amountUSD'].sum()
 col1.metric('Total USD', '${:,.2f}'.format(total_usd))
 total_donations = (dfv['amountUSD'] > 0).sum()
-col1.metric('Total Donations',  '{:,.0f}'.format(total_donations))
+col1.metric('Total Donations', '{:,.0f}'.format(total_donations))
 total_by_donor = dfv.groupby('voter')['amountUSD'].sum()
 nonZero_donors = (total_by_donor > 0).sum()
-col1.metric('Total Donors',  '{:,.0f}'.format(nonZero_donors))
+col1.metric('Total Donors', '{:,.0f}'.format(nonZero_donors))
 
-col1.metric('Total Projects',  '{:,.0f}'.format(len(dfp)))
+col1.metric('Total Projects', '{:,.0f}'.format(len(dfp)))
 
 col2.write('## Projects')
 # write projects title, votes, amount USD, unique contributors
 col2.write(dfp[['title', 'votes', 'amountUSD', 'uniqueContributors']])
 
-
 # display the chart
 # fig_grants = get_grants_bar_chart(dfv)
 # st.plotly_chart(fig_grants, use_container_width=False)
 
-starting_blockNumber = 17123133
+starting_blockNumber = dfv['blockNumber'].min()
 ending_blockNumber = dfv['blockNumber'].max()
 starting_blockTime = datetime.datetime(2023, 4, 25, 12, 13, 35)
 
@@ -98,11 +96,29 @@ dfb = create_block_times(starting_blockNumber, ending_blockNumber, starting_bloc
 # merge the block times with the votes data
 dfv = pd.merge(dfv, dfb, how='left', on='blockNumber')
 # graph of the amountUSD grouped by utc_time hour
-#st.subheader('Amount USD by Hour and day of utc_time')
+# st.subheader('Amount USD by Hour and day of utc_time')
 dfv_count = dfv.groupby([dfv['utc_time'].dt.strftime('%m-%d-%Y %H')])['id'].nunique()
 # set the index to be the utc_time column
 dfv_count.index = pd.to_datetime(dfv_count.index)
 # fill in missing hours with 0
-dfv_count = dfv_count.reindex(pd.date_range(start=dfv_count.index.min(), end=dfv_count.index.max(), freq='H'), fill_value=0)
-fig = px.bar(dfv_count, x=dfv_count.index, y='id', labels={'id': 'Number of Votes'}, title='Number of Contributions over Time')
+dfv_count = dfv_count.reindex(pd.date_range(start=dfv_count.index.min(), end=dfv_count.index.max(), freq='H'),
+                              fill_value=0)
+fig = px.bar(dfv_count, x=dfv_count.index, y='id', labels={'id': 'Number of Votes'},
+             title='Number of Contributions over Time')
 st.plotly_chart(fig, use_container_width=True)
+
+
+@st.cache_data(ttl=3000)
+def convert_df(df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return df.to_csv(index=False).encode('utf-8')
+
+
+csv = convert_df(dfv)
+
+st.download_button(
+    label="Download votes as CSV",
+    data=csv,
+    file_name=option + '.csv',
+    mime='text/csv',
+)
