@@ -2,3 +2,6 @@
 vSstreamlitGrant
 
 *.pyc
+
+.idea
+.vscode

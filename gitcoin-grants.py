@@ -90,7 +90,6 @@ col2.write(dfp[['title', 'votes', 'amountUSD', 'uniqueContributors']])
 # fig_grants = get_grants_bar_chart(dfv)
 # st.plotly_chart(fig_grants, use_container_width=False)
 
-
 starting_blockNumber = 17123133
 ending_blockNumber = dfv['blockNumber'].max()
 starting_blockTime = datetime.datetime(2023, 4, 25, 12, 13, 35)
