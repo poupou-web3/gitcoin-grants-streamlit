@@ -5,12 +5,12 @@ import requests
 import datetime
 import plotly.graph_objs as go
 
-CHAIN_URL = 'https://indexer-grants-stack.gitcoin.co/data/'
+CHAIN_URL = 'https://indexer-grants-stack.gitcoin.co/data'
 
 
 @st.cache_data(ttl=3000)
 def load_chain_data(chain_id):
-    json_round_url = CHAIN_URL + chain_id + '/rounds.json'
+    json_round_url = '/'.join([CHAIN_URL, chain_id, 'rounds.json'])
     try:
         response = requests.get(json_round_url)
         if response.status_code == 200:
@@ -19,12 +19,14 @@ def load_chain_data(chain_id):
             for round in chain_data:
                 if round['metadata'] is not None:
                     try:
-                        round_start_time = datetime.datetime.utcfromtimestamp(int(round['roundStartTime'])) if 'roundStartTime' in round else ''
+                        round_start_time = datetime.datetime.utcfromtimestamp(
+                            int(round['roundStartTime'])) if 'roundStartTime' in round else ''
                     except Exception as e:
                         print(f"Error converting roundStartTime {round['roundStartTime']} to datetime: {e}")
                         round_start_time = ''
                     try:
-                        round_end_time = datetime.datetime.utcfromtimestamp(int(round['roundEndTime'])) if 'roundEndTime' in round else ''
+                        round_end_time = datetime.datetime.utcfromtimestamp(
+                            int(round['roundEndTime'])) if 'roundEndTime' in round else ''
                     except Exception as e:
                         print(f"Error converting roundEndTime {round['roundEndTime']} to datetime: {e}")
                         round_end_time = ''
@@ -62,7 +64,7 @@ def load_chain_data(chain_id):
 @st.cache_data(ttl=3000)
 def load_round_projects_data(chain_id, round_id):
     # prepare the URLs
-    projects_url = 'https://indexer-grants-stack.gitcoin.co/data/1/rounds/' + round_id + '/projects.json'
+    projects_url = '/'.join([CHAIN_URL, chain_id, 'rounds', round_id, 'projects.json'])
 
     try:
         # download the Projects JSON data from the URL
@@ -96,8 +98,8 @@ def load_round_projects_data(chain_id, round_id):
 
 
 @st.cache_data(ttl=3000)
-def load_round_votes_data(round_id):
-    votes_url = 'https://indexer-grants-stack.gitcoin.co/data/1/rounds/' + round_id + '/votes.json'
+def load_round_votes_data(chain_id, round_id):
+    votes_url = '/'.join([CHAIN_URL, chain_id, 'rounds', round_id, 'votes.json'])
     try:
         # download the Votes JSON data from the URL
         response = requests.get(votes_url)
